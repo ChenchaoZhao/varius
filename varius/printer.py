@@ -26,15 +26,17 @@ def latex_to_plain(latex_string: str) -> str:
     return plain
 
 
-def show(x):
+def show(*args):
 
-    if G.latex:
-        if hasattr(x, "display"):
-            display(x.display())
+    for x in args:
+
+        if G.latex:
+            if hasattr(x, "display"):
+                display(x.display())
+            else:
+                display(x)
         else:
-            display(x)
-    else:
-        print(x)
+            print(f"{x}\n")
 
 
 def latex_use_cdot():
