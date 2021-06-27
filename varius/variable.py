@@ -1,30 +1,43 @@
-import numbers
 from typing import *
 
-from . import _CURRENT_VERSION as CV
+import sympy
+from IPython.display import Math
+
+from . import EXPRESSION_STORAGE as ES
 from . import VARIABLE_STORAGE as VS
+from . import MagicGlobals as G
 
-__all__ = ["Variable"]
+__all__ = ["Variable", "Expression"]
 
 
-class Variable(numbers.Real):
-    def __init__(self, name: str, value: Optional[Union[float, int]] = None):
-        self.__name = name
-        if CV is not None and value is not None:
-            VS[CV][name] = value
+class Variable(sympy.Symbol):
+    """An abstract variable that represents a numerical quantity."""
+
+    def __new__(
+        cls, name: str, value: Optional[Union[float, int]] = None, is_text: bool = True
+    ):
+        if is_text:
+            name = "\\text{" + name + "}"
+        instance = super(Variable, cls).__new__(cls, name)
+        instance.is_text = is_text
+
+        if G.cv is not None and value is not None:
+            VS[G.cv][instance] = value
+
+        return instance
 
     @property
     def value(self) -> Union[float, int]:
-        if CV is not None:
-            return self.__getitem__(CV)
+        if G.cv is not None:
+            return self.__getitem__(G.cv)
         else:
             raise RuntimeError("Current version is `None`.")
 
     @value.setter
     def value(self, value: Union[float, int]):
 
-        if CV is not None:
-            self.__setitem__(CV, value)
+        if G.cv is not None:
+            self.__setitem__(G.cv, value)
         else:
             raise RuntimeError("Current version is `None`.")
 
@@ -33,11 +46,11 @@ class Variable(numbers.Real):
 
     def __getitem__(self, version: str) -> Union[float, int]:
         if version in VS:
-            if self.name in VS[version]:
-                return VS[version][self.name]
+            if self in VS[version]:
+                return VS[version][self]
             else:
                 raise KeyError(
-                    f"Variable `{self.name}` was not assigned a value in version `{version}`."
+                    f"Variable `{self._name}` was not assigned a value in version `{version}`."
                 )
         else:
             raise KeyError(f"Version `{version}` does not exist.")
@@ -47,75 +60,61 @@ class Variable(numbers.Real):
             raise TypeError(
                 f"Assigned value should be float or int but get {type(value)}"
             )
-        VS[version][self.name] = value
+        if version not in VS:
+            VS[version] = dict()
+            ES[version] = dict()
 
-    @property
-    def name(self) -> str:
-        return self.__name
+        VS[version][self] = value
 
-    @name.setter
-    def name(self, new_name):
-        raise RuntimeError("Variable name is immutable.")
+    def __repr__(self) -> str:
+        if self.is_text:
+            return self.name[len("\\text{") : -1]
+        return self.name
 
-    def __abs__(self):
-        pass
+    __str__ = __repr__
 
-    def __add__(self, other):
-        pass
+    def display(self):
+        return Math(sympy.latex(self))
 
-    def __ceil__(self):
-        pass
 
-    def __eq__(self, other):
-        pass
+def eval_expr(expr, version: str = G.cv):
+    val = VS[version]
+    return expr.subs(val)
 
-    def __float__(self):
-        pass
 
-    def __floor__(self):
-        pass
+class Expression:
+    def __init__(self, name: str, expr):
+        self.name = name
+        self.expr = expr
 
-    def __floordiv__(self, other):
-        pass
+    def __call__(self, version: Optional[str] = None):
+        if version is None:
+            version = G.cv
+        res = eval_expr(self.expr, version)
+        ES[version][self.name] = res
 
-    def __le__(self, other):
-        pass
+        return res
 
-    def __lt__(self, other):
-        pass
+    def __repr__(self):
+        return f"{self.name} = {str(self.expr)}"
 
-    def __mod__(self, other):
-        pass
+    __str__ = __repr__
 
-    def __mul__(self, other):
-        pass
+    def display(self, evaluate: bool = True, version: Optional[str] = None):
 
-    def __neg__(self):
-        pass
+        lhs = "\\text{" + self.name + "}"
 
-    def __pos__(self):
-        pass
+        rhs = sympy.latex(self.expr)
+        eq = lhs + " = " + rhs
 
-    def __pow__(self, other):
-        pass
+        if not evaluate:
+            return Math(eq)
 
-    def __round__(self):
-        pass
+        res = sympy.latex(self.__call__(version))
 
-    def __truediv__(self, other):
-        pass
+        if res == rhs:
+            return Math(eq)
 
-    def __trunc__(self):
-        pass
+        eq += " = " + res
 
-    __radd__ = __add__
-
-    __rfloordiv__ = __floordiv__
-
-    __rmod__ = __mod__
-
-    __rmul__ = __mul__
-
-    __rpow__ = __pow__
-
-    __rtruediv__ = __truediv__
+        return Math(eq)

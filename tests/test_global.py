@@ -12,14 +12,14 @@ def test_storage():
 
 def test_version():
 
-    assert varius._CURRENT_VERSION is None
+    assert varius.MagicGlobals.cv == "default"
 
-    varius._CURRENT_VERSION = "v0"
+    varius.MagicGlobals.cv = "v0"
 
-    assert varius._CURRENT_VERSION == "v0"
+    assert varius.MagicGlobals.cv == "v0"
 
 
 def test_global_scope():
 
-    assert varius._CURRENT_VERSION == "v0"
+    assert varius.MagicGlobals.cv == "v0"
     assert varius.VARIABLE_STORAGE["v0"] == {"a": 0.1, "b": 0.1}
