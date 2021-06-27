@@ -6,6 +6,7 @@ from IPython.display import Math
 from . import EXPRESSION_STORAGE as ES
 from . import VARIABLE_STORAGE as VS
 from . import MagicGlobals as G
+from .printer import *
 
 __all__ = ["Variable", "Expression"]
 
@@ -14,17 +15,24 @@ class Variable(sympy.Symbol):
     """An abstract variable that represents a numerical quantity."""
 
     def __new__(
-        cls, name: str, value: Optional[Union[float, int]] = None, is_text: bool = True
+        cls,
+        name: str,
+        value: Optional[Union[float, int]] = None,
+        is_text: bool = True,
+        **assumptions: Any,
     ):
         if is_text:
-            name = "\\text{" + name + "}"
-        instance = super(Variable, cls).__new__(cls, name)
-        instance.is_text = is_text
+            name = r"\text{" + name + r"}"
+        instance = super(Variable, cls).__new__(cls, name, **assumptions)
 
         if G.cv is not None and value is not None:
             VS[G.cv][instance] = value
 
         return instance
+
+    @property
+    def plain_name(self):
+        return latex_to_plain(self.name)
 
     @property
     def value(self) -> Union[float, int]:
@@ -50,7 +58,7 @@ class Variable(sympy.Symbol):
                 return VS[version][self]
             else:
                 raise KeyError(
-                    f"Variable `{self._name}` was not assigned a value in version `{version}`."
+                    f"Variable `{self.plain_name}` was not assigned a value in version `{version}`."
                 )
         else:
             raise KeyError(f"Version `{version}` does not exist.")
@@ -67,14 +75,16 @@ class Variable(sympy.Symbol):
         VS[version][self] = value
 
     def __repr__(self) -> str:
-        if self.is_text:
-            return self.name[len("\\text{") : -1]
-        return self.name
+        return self.plain_name
 
     __str__ = __repr__
 
     def display(self):
-        return Math(sympy.latex(self))
+        try:
+            v = self.value
+            return Math(sympy.latex(self) + f"= {v}")
+        except KeyError:
+            return Math(sympy.latex(self))
 
 
 def eval_expr(expr, version: str = G.cv):
@@ -83,26 +93,40 @@ def eval_expr(expr, version: str = G.cv):
 
 
 class Expression:
-    def __init__(self, name: str, expr):
+    def __init__(self, name: str, expr, is_text: bool = True):
+        if is_text:
+            name = r"\text{" + name + r"}"
         self.name = name
         self.expr = expr
+
+    @property
+    def plain_name(self):
+        return latex_to_plain(self.name)
+
+    @property
+    def plain_expr(self):
+        return latex_to_plain(r"{}".format(self.expr))
 
     def __call__(self, version: Optional[str] = None):
         if version is None:
             version = G.cv
         res = eval_expr(self.expr, version)
-        ES[version][self.name] = res
+        ES[version][self.plain_name] = res
 
         return res
 
+    @property
+    def value(self):
+        return self.__call__()
+
     def __repr__(self):
-        return f"{self.name} = {str(self.expr)}"
+        return f"{self.plain_name} = {self.plain_expr}"
 
     __str__ = __repr__
 
     def display(self, evaluate: bool = True, version: Optional[str] = None):
 
-        lhs = "\\text{" + self.name + "}"
+        lhs = self.name
 
         rhs = sympy.latex(self.expr)
         eq = lhs + " = " + rhs

@@ -3,6 +3,7 @@ from typing import *
 from . import EXPRESSION_STORAGE as ES
 from . import VARIABLE_STORAGE as VS
 from . import MagicGlobals as G
+from .printer import *
 
 __all__ = ["Scope"]
 
@@ -40,12 +41,12 @@ class Scope:
         lines.append(f"Scope version: {self.version}")
 
         lines.append(" " * INDENT + "Variables:")
-        _0 = len("\\text{")
+
         for k, v in self.variables.items():
-            lines.append(" " * INDENT * 2 + f"{k.name[_0:-1]} = {v}")
+            lines.append(" " * INDENT * 2 + f"{latex_to_plain(k.name)} = {v}")
         lines.append(" " * INDENT + "Expressions:")
         for k, v in self.expressions.items():
-            lines.append(" " * INDENT * 2 + f"{k} = {v}")
+            lines.append(" " * INDENT * 2 + f"{latex_to_plain(k)} = {v}")
 
         return "\n".join(lines)
 
