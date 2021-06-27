@@ -1,4 +1,3 @@
-numpy
-dataclasses
+sympy
 # dev
 pytest
