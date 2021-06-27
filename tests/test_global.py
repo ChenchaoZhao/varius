@@ -3,7 +3,7 @@ import varius
 
 def test_storage():
 
-    assert varius.VARIABLE_STORAGE == {}
+    assert varius.VARIABLE_STORAGE == {"default": dict()}
 
     varius.VARIABLE_STORAGE["v0"] = {"a": 0.1, "b": 0.1}
 

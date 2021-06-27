@@ -15,12 +15,11 @@ def set_latex(use: bool = True):
 
 
 from .scope import Scope as note
-from .variable import Expression, Variable, eval_expr
+from .variable import Expression, Variable
 
 vr = Variable
-ev = eval_expr
 ex = Expression
 
-__all__ = ["note", "vr", "ev", "ex"]
+__all__ = ["note", "vr", "ex"]
 
 __version__ = "0.1.0"
