@@ -1,3 +1,4 @@
 sympy
+IPython
 # dev
 pytest
