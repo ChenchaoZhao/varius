@@ -5,6 +5,8 @@
 
 Perform computations using various versions of variables
 
+Varius is the Latin word for "various."
+
 ## Install
 
 `pip install varius`
