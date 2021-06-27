@@ -46,12 +46,10 @@ with note('20% discount', copy='default') as d:
 # another case
 with note('50% discount', copy='default') as d:
     rev(rev['default'] * 0.5)
-    
     show(rev)
     show(cst)
     show(pft)
     show(pmg)
-    
     print(d)
 
 ```
