@@ -1,7 +1,6 @@
 from typing import *
 
 import sympy
-from IPython.display import Math
 
 from . import EXPRESSION_STORAGE as ES
 from . import VARIABLE_STORAGE as VS
@@ -52,14 +51,12 @@ class Variable(sympy.Symbol):
     def __call__(self, value: Union[float, int]):
         self.value = value
 
-    def __getitem__(self, version: str) -> Union[float, int]:
+    def __getitem__(self, version: str) -> Optional[Union[float, int]]:
         if version in VS:
             if self in VS[version]:
                 return VS[version][self]
             else:
-                raise KeyError(
-                    f"Variable `{self.plain_name}` was not assigned a value in version `{version}`."
-                )
+                return None
         else:
             raise KeyError(f"Version `{version}` does not exist.")
 
@@ -79,12 +76,13 @@ class Variable(sympy.Symbol):
 
     __str__ = __repr__
 
-    def display(self):
+    @property
+    def latex_repr(self):
         try:
             v = self.value
-            return Math(sympy.latex(self) + f"= {v}")
+            return sympy.latex(self) + f"= {v}"
         except KeyError:
-            return Math(sympy.latex(self))
+            return sympy.latex(self)
 
 
 def eval_expr(expr, version: str = G.cv):
@@ -93,6 +91,8 @@ def eval_expr(expr, version: str = G.cv):
 
 
 class Expression:
+    """Expression in symbolic variables."""
+
     def __init__(self, name: str, expr, is_text: bool = True):
         if is_text:
             name = r"\text{" + name + r"}"
@@ -124,21 +124,15 @@ class Expression:
 
     __str__ = __repr__
 
-    def display(self, evaluate: bool = True, version: Optional[str] = None):
-
+    @property
+    def latex_repr(self, evaluate: bool = True, version: Optional[str] = None):
         lhs = self.name
-
         rhs = sympy.latex(self.expr)
         eq = lhs + " = " + rhs
-
         if not evaluate:
-            return Math(eq)
-
+            return eq
         res = sympy.latex(self.__call__(version))
-
         if res == rhs:
-            return Math(eq)
-
+            return eq
         eq += " = " + res
-
-        return Math(eq)
+        return eq

@@ -12,7 +12,7 @@ def test_vr():
 
     print(x)
 
-    x.display()
+    x.latex_repr
 
     show(x)
 
@@ -49,3 +49,12 @@ def test_ex():
     assert w.value.evalf() == (200 - 100) / 200
 
     varius.reset_all()
+
+
+def test_scope():
+
+    n = note()
+    print(n)
+
+    with note("new", "default") as n:
+        print(n)

@@ -9,7 +9,9 @@ __all__ = ["Scope"]
 
 
 class Scope:
-    def __init__(self, version: str, copy: Optional[str] = None):
+    "Scope: alias `note`"
+
+    def __init__(self, version: str = "default", copy: Optional[str] = None):
         self.prev = G.cv
         self.version = version
         if version not in VS:
@@ -19,11 +21,11 @@ class Scope:
 
     @property
     def variables(self) -> Dict:
-        return VS[self.version]
+        return {latex_to_plain(k.name): v for k, v in VS[self.version].items()}
 
     @property
     def expressions(self) -> Dict:
-        return ES[self.version]
+        return {latex_to_plain(k): v for k, v in ES[self.version].items()}
 
     def load(self, other_version):
         duplicate(self.version, other_version)
@@ -43,10 +45,10 @@ class Scope:
         lines.append(" " * INDENT + "Variables:")
 
         for k, v in self.variables.items():
-            lines.append(" " * INDENT * 2 + f"{latex_to_plain(k.name)} = {v}")
+            lines.append(" " * INDENT * 2 + f"{k} = {v}")
         lines.append(" " * INDENT + "Expressions:")
         for k, v in self.expressions.items():
-            lines.append(" " * INDENT * 2 + f"{latex_to_plain(k)} = {v}")
+            lines.append(" " * INDENT * 2 + f"{k} = {v}")
 
         return "\n".join(lines)
 

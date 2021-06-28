@@ -1,6 +1,6 @@
 import re
 
-from IPython.display import display
+from IPython.display import Math, display
 
 from . import MagicGlobals as G
 
@@ -31,12 +31,15 @@ def show(*args):
     for x in args:
 
         if G.latex:
-            if hasattr(x, "display"):
-                display(x.display())
+            if hasattr(x, "latex_repr"):
+                display(Math(x.latex_repr))
             else:
                 display(x)
         else:
-            print(f"{x}\n")
+            if hasattr(x, "latex_repr"):
+                print(latex_to_plain(x.latex_repr))
+            else:
+                print(x)
 
 
 def latex_use_cdot():
