@@ -1,9 +1,9 @@
-from typing import *
+from typing import Dict, Optional
 
 from . import EXPRESSION_STORAGE as ES
 from . import VARIABLE_STORAGE as VS
 from . import MagicGlobals as G
-from .printer import *
+from .printer import latex_to_plain
 
 __all__ = ["Scope"]
 
