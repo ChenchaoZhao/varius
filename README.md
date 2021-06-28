@@ -5,6 +5,8 @@
 
 Perform computations using various versions of variables
 
+Varius is the Latin word for "various."
+
 ## Install
 
 `pip install varius`
@@ -27,29 +29,20 @@ pmg = ex('profit margin', pft.expr/rev)
 # if in jupyter notebooks, they will be displayed as beautiful latex equations otherwise as plain texts
 
 with note('default') as d:
-    show(rev)
-    show(cst)
-    show(pft)
-    show(pmg)
+    show(cst, rev, pft, pmg)
     print(d)
 
 # new case
 with note('20% discount', copy='default') as d:
     rev(rev['default'] * 0.8)
-    show(rev)
-    show(cst)
-    show(pft)
-    show(pmg)
+    show(cst, rev, pft, pmg)
     print(d)
 
 
 # another case
 with note('50% discount', copy='default') as d:
     rev(rev['default'] * 0.5)
-    show(rev)
-    show(cst)
-    show(pft)
-    show(pmg)
+    show(cst, rev, pft, pmg)
     print(d)
 
 ```
