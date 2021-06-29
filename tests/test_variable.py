@@ -81,3 +81,14 @@ def test_grad():
     assert isinstance(z.grad(), dict)
 
     assert isinstance(w.grad(), dict)
+
+    with note("new", "default") as s:
+        x(200)
+        y(300)
+        z()
+        w()
+        z.grad()
+        w.grad()
+        show(*vr.list_items())
+        show(*ex.list_items())
+        show(s)
