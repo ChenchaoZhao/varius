@@ -17,7 +17,9 @@ def latex_to_plain(latex_string: str) -> str:
 
     # assume latex string is raw string e.g. r'\text{ab c}'
 
-    pattern = re.compile(r"\\[a-zA-Z]+")  # latex commands like \text \rm
+    latex_string = latex_string.replace(r"\partial", "∂")
+
+    pattern = re.compile(r"\\([a-zA-Z]+|,)")  # latex commands like \text \rm and \,
 
     latex_string = re.sub(pattern, "", latex_string)
 
