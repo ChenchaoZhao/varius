@@ -26,6 +26,10 @@ def test_vr():
 
     print(y / x)
 
+    vr.list()
+
+    vr.list_items()
+
     varius.reset_all()
 
 
@@ -48,6 +52,10 @@ def test_ex():
     assert z.value.evalf() == 200 - 100
     assert w.value.evalf() == (200 - 100) / 200
 
+    ex.list()
+
+    ex.list_items()
+
     varius.reset_all()
 
 
@@ -58,3 +66,18 @@ def test_scope():
 
     with note("new", "default") as n:
         print(n)
+
+
+def test_grad():
+
+    x = vr("cost [usd]", 100)
+
+    y = vr("revenue [usd]", 200)
+
+    z = ex("profit [usd]", y - x)
+
+    w = ex("margin", z.expr / y)
+
+    assert isinstance(z.grad(), dict)
+
+    assert isinstance(w.grad(), dict)

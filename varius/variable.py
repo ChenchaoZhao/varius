@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import sympy
 
@@ -13,6 +13,16 @@ __all__ = ["Variable", "Expression"]
 class Variable(sympy.Symbol):
     """An abstract variable that represents a numerical quantity."""
 
+    _registry: Dict = dict()
+
+    @classmethod
+    def list(cls) -> List:
+        return list(cls._registry.keys())
+
+    @classmethod
+    def list_items(cls) -> List:
+        return list(cls._registry.values())
+
     def __new__(
         cls,
         name: str,
@@ -26,6 +36,8 @@ class Variable(sympy.Symbol):
 
         if G.cv is not None and value is not None:
             VS[G.cv][instance] = value
+
+        cls._registry[instance.plain_name] = instance
 
         return instance
 
@@ -93,11 +105,30 @@ def eval_expr(expr, version: str = G.cv):
 class Expression:
     """Expression in symbolic variables."""
 
+    _registry: Dict = dict()
+
+    @classmethod
+    def list(cls) -> List:
+        return list(cls._registry.keys())
+
+    @classmethod
+    def list_items(cls) -> List:
+        return list(cls._registry.values())
+
     def __init__(self, name: str, expr, is_text: bool = True):
         if is_text:
             name = r"\text{" + name + r"}"
         self.name = name
         self.expr = expr
+
+        self._registry[self.plain_name] = self
+
+    def __del__(self):
+        del self._registry[self.plain_name]
+        for version in VS:
+            if self.plain_name in VS[version]:
+                del VS[version][self.plain_name]
+        super().__del__()
 
     @property
     def plain_name(self):
@@ -114,6 +145,19 @@ class Expression:
         ES[version][self.plain_name] = res
 
         return res
+
+    def grad(
+        self, *args: Variable, evaluate: bool = True, version: Optional[str] = None
+    ) -> Dict:
+        if len(args) > 0:
+            grads = {x: Gradient(self, x) for x in args}
+        else:
+            grads = {x: Gradient(self, x) for x in Variable._registry.values()}
+
+        if evaluate:
+            grads = {v: g(version) for v, g in grads.items()}
+
+        return grads
 
     @property
     def value(self):
@@ -136,3 +180,22 @@ class Expression:
             return eq
         eq += " = " + res
         return eq
+
+
+class Gradient(Expression):
+    def __init__(self, expression: Expression, variable: Variable):
+        assert isinstance(
+            expression, (Expression, Variable, sympy.Symbol)
+        ), f"The type of expression `{type(expression)}` should be `Expression`."
+        assert isinstance(
+            variable, (Variable, sympy.Symbol)
+        ), f"The type of variable `{type(variable)}` should be `Variable`."
+        name = (
+            r"\partial \left["
+            + expression.name
+            + r"\right] / \partial \left["
+            + variable.name
+            + r"\right]"
+        )
+        expr = expression.expr.diff(variable)
+        super().__init__(name, expr, is_text=False)
