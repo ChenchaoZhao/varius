@@ -202,10 +202,6 @@ class Expression(numbers.Number):
         eq = lhs + " = " + rhs
         if not evaluate:
             return eq
-        #         try:
-        #             res = sympy.Float(self.__call__(version), G.float_digit)
-        #         except TypeError:
-        #             res = self.__call__(version)
 
         res = self.__call__(version)
 
