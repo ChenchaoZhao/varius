@@ -45,9 +45,11 @@ class Scope:
         lines.append(" " * INDENT + "Variables:")
 
         for k, v in self.variables.items():
+            v = latex_to_plain(str(v))
             lines.append(" " * INDENT * 2 + f"{k} = {v}")
         lines.append(" " * INDENT + "Expressions:")
         for k, v in self.expressions.items():
+            v = latex_to_plain(str(v))
             lines.append(" " * INDENT * 2 + f"{k} = {v}")
 
         return "\n".join(lines)

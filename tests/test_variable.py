@@ -26,9 +26,7 @@ def test_vr():
 
     print(y / x)
 
-    vr.list()
-
-    vr.list_items()
+    vr.ls()
 
     varius.reset_all()
 
@@ -43,7 +41,7 @@ def test_ex():
 
     z = ex("profit [usd]", y - x)
 
-    w = ex("margin", z.expr / y)
+    w = ex("margin", z / y)
 
     z()
 
@@ -52,9 +50,9 @@ def test_ex():
     assert z.value.evalf() == 200 - 100
     assert w.value.evalf() == (200 - 100) / 200
 
-    ex.list()
+    ex.ls()
 
-    ex.list_items()
+    print(z - w, z * w, z / w, z ** 2, z ** w)
 
     varius.reset_all()
 
@@ -89,6 +87,6 @@ def test_grad():
         w()
         z.grad()
         w.grad()
-        show(*vr.list_items())
-        show(*ex.list_items())
+        show(*vr.ls())
+        show(*ex.ls())
         show(s)

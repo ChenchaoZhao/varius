@@ -1,3 +1,4 @@
+import numbers
 from typing import Any, Dict, List, Optional, Union
 
 import sympy
@@ -16,11 +17,7 @@ class Variable(sympy.Symbol):
     _registry: Dict = dict()
 
     @classmethod
-    def list(cls) -> List:
-        return list(cls._registry.keys())
-
-    @classmethod
-    def list_items(cls) -> List:
+    def ls(cls) -> List:
         return list(cls._registry.values())
 
     def __new__(
@@ -35,7 +32,7 @@ class Variable(sympy.Symbol):
         instance = super(Variable, cls).__new__(cls, name, **assumptions)
 
         if G.cv is not None and value is not None:
-            VS[G.cv][instance] = sympy.Float(value, G.float_digit)
+            instance._set_value(G.cv, value)
 
         cls._registry[instance.plain_name] = instance
 
@@ -48,7 +45,7 @@ class Variable(sympy.Symbol):
     @property
     def value(self) -> Union[float, int]:
         if G.cv is not None:
-            return self.__getitem__(G.cv)
+            return self.get(G.cv)
         else:
             raise RuntimeError("Current version is `None`.")
 
@@ -56,23 +53,26 @@ class Variable(sympy.Symbol):
     def value(self, value: Union[float, int]):
 
         if G.cv is not None:
-            self.__setitem__(G.cv, value)
+            self._set_value(G.cv, value)
         else:
             raise RuntimeError("Current version is `None`.")
 
     def __call__(self, value: Union[float, int]):
         self.value = value
 
-    def __getitem__(self, version: str) -> Optional[Union[float, int]]:
+    def get(self, version: str) -> Optional[Union[float, int]]:
+
+        assert isinstance(version, str)
+
         if version in VS:
             if self in VS[version]:
-                return VS[version][self]
+                return sympy.Float(VS[version][self], G.float_digit)
             else:
                 return None
         else:
             raise KeyError(f"Version `{version}` does not exist.")
 
-    def __setitem__(self, version: str, value: Union[float, int]):
+    def _set_value(self, version: str, value: Union[float, int]):
         if not isinstance(value, (float, int)):
             raise TypeError(
                 f"Assigned value should be float or int but get {type(value)}"
@@ -99,20 +99,16 @@ class Variable(sympy.Symbol):
 
 def eval_expr(expr, version: str = G.cv):
     val = VS[version]
-    return sympy.Float(expr.subs(val), G.float_digit)
+    return expr.subs(val)
 
 
-class Expression:
+class Expression(numbers.Number):
     """Expression in symbolic variables."""
 
     _registry: Dict = dict()
 
     @classmethod
-    def list(cls) -> List:
-        return list(cls._registry.keys())
-
-    @classmethod
-    def list_items(cls) -> List:
+    def ls(cls) -> List:
         return list(cls._registry.values())
 
     def __init__(self, name: str, expr, is_text: bool = True):
@@ -138,6 +134,44 @@ class Expression:
         ES[version][self.plain_name] = res
 
         return res
+
+    def __add__(self, other):
+        if isinstance(other, Expression):
+            return self.expr + other.expr
+        else:
+            return self.expr + other
+
+    def __sub__(self, other):
+        if isinstance(other, Expression):
+            return self.expr - other.expr
+        else:
+            return self.expr - other
+
+    def __mul__(self, other):
+        if isinstance(other, Expression):
+            return self.expr * other.expr
+        else:
+            return self.expr * other
+
+    def __truediv__(self, other):
+        if isinstance(other, Expression):
+            return self.expr / other.expr
+        else:
+            return self.expr / other
+
+    def __floordiv__(self, other):
+        if isinstance(other, Expression):
+            return self.expr // other.expr
+        else:
+            return self.expr // other
+
+    def __pow__(self, other):
+        if isinstance(other, Expression):
+            return self.expr ** other.expr
+        else:
+            return self.expr ** other
+
+    __div__ = __truediv__
 
     def grad(
         self, *args: Variable, evaluate: bool = True, version: Optional[str] = None
@@ -168,7 +202,14 @@ class Expression:
         eq = lhs + " = " + rhs
         if not evaluate:
             return eq
-        res = sympy.latex(self.__call__(version))
+        #         try:
+        #             res = sympy.Float(self.__call__(version), G.float_digit)
+        #         except TypeError:
+        #             res = self.__call__(version)
+
+        res = self.__call__(version)
+
+        res = sympy.latex(res)
         if res == rhs:
             return eq
         eq += " = " + res
