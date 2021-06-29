@@ -123,13 +123,6 @@ class Expression:
 
         self._registry[self.plain_name] = self
 
-    def __del__(self):
-        del self._registry[self.plain_name]
-        for version in VS:
-            if self.plain_name in VS[version]:
-                del VS[version][self.plain_name]
-        super().__del__()
-
     @property
     def plain_name(self):
         return latex_to_plain(self.name)
