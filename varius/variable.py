@@ -35,7 +35,7 @@ class Variable(sympy.Symbol):
         instance = super(Variable, cls).__new__(cls, name, **assumptions)
 
         if G.cv is not None and value is not None:
-            VS[G.cv][instance] = value
+            VS[G.cv][instance] = sympy.Float(value, G.float_digit)
 
         cls._registry[instance.plain_name] = instance
 
@@ -81,7 +81,7 @@ class Variable(sympy.Symbol):
             VS[version] = dict()
             ES[version] = dict()
 
-        VS[version][self] = value
+        VS[version][self] = sympy.Float(value, G.float_digit)
 
     def __repr__(self) -> str:
         return self.plain_name
@@ -91,7 +91,7 @@ class Variable(sympy.Symbol):
     @property
     def latex_repr(self):
         try:
-            v = self.value
+            v = sympy.latex(self.value)
             return sympy.latex(self) + f"= {v}"
         except KeyError:
             return sympy.latex(self)
@@ -99,7 +99,7 @@ class Variable(sympy.Symbol):
 
 def eval_expr(expr, version: str = G.cv):
     val = VS[version]
-    return expr.subs(val)
+    return sympy.Float(expr.subs(val), G.float_digit)
 
 
 class Expression:

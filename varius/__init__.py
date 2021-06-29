@@ -7,6 +7,7 @@ EXPRESSION_STORAGE: Dict[str, Dict[str, float]] = {"default": dict()}
 class MagicGlobals:
     latex: bool = True  # use latex
     cv: str = "default"  # current version
+    float_digit: int = 5
     repr_indent: int = 2
 
 
