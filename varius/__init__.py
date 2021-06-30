@@ -47,4 +47,4 @@ ex = Expression
 
 __all__ = ["note", "vr", "ex", "show"]
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
