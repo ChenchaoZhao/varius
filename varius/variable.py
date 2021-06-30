@@ -186,6 +186,9 @@ class Expression(numbers.Number):
 
         return grads
 
+    def diff(self, variable: Variable):
+        return self.expr.diff(variable)
+
     @property
     def value(self):
         return self.__call__()
