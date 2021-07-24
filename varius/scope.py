@@ -40,7 +40,7 @@ class Scope:
     def __repr__(self) -> str:
         INDENT = G.repr_indent
         lines = []
-        lines.append(f"Scope version: {self.version}")
+        lines.append(f"Version: {self.version}")
 
         lines.append(" " * INDENT + "Variables:")
 
